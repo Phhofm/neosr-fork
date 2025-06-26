@@ -1,3 +1,10 @@
+# train.py - neosr training pipeline with Quantization-Aware Training (QAT) support
+# Original source: neosr-project/neosr/train.py
+#
+# This file has been modified to include logic for enabling QAT if specified in the config,
+# and specifically targets the underlying AetherNet model (net_g) for QAT preparation,
+# now correctly passing the full 'opt' dictionary to it.
+
 import datetime
 import logging
 import math
@@ -84,7 +91,7 @@ def create_train_val_dataloader(
                 seed=opt["manual_seed"],
             )
 
-            accumulate = opt["datasets"]["train"].get("accumulate", 1)
+            accumulate = dataset_opt.get("accumulate", 1)
             num_iter_per_epoch = math.ceil(
                 len(train_set)  # type: ignore[reportArgumentType]
                 * dataset_enlarge_ratio
@@ -143,7 +150,7 @@ def load_resume_state(opt: dict[str, Any]):
         resume_state = None
     else:
         resume_state = torch.load(
-            resume_state_path, map_location=torch.device("cuda"), weights_only=True
+            resume_state_path, map_location=torch.device("cpu"), weights_only=False
         )
         check_resume(opt, resume_state["iter"])
     return resume_state
@@ -242,6 +249,21 @@ def train_pipeline(root_path: str) -> None:
     # create model
     model = build_model(opt)
 
+    # --- QAT INTEGRATION START ---
+    # Check if QAT is enabled in the training configuration
+    if opt.get('train', {}).get('enable_qat', False):
+        logger.info(f"{tc.light_green}Enabling Quantization-Aware Training (QAT)...{tc.end}")
+        # Call the prepare_qat method on your model's underlying network (net_g).
+        # IMPORTANT: Pass the full 'opt' dictionary here so aether_arch.py can access bfloat16 info.
+        if hasattr(model, 'net_g') and hasattr(model.net_g, 'prepare_qat'):
+            model.net_g.prepare_qat(opt) # Pass 'opt' here
+        else:
+            logger.error(f"{tc.red}Error: model.net_g or model.net_g.prepare_qat() not found. "
+                         "Please ensure 'aether' network is selected and aether_arch.py is correctly implemented with QAT methods.{tc.end}")
+            sys.exit(1)
+        logger.info(f"{tc.light_green}QAT preparation complete.{tc.end}")
+    # --- QAT INTEGRATION END ---
+
     if resume_state:  # resume training
         # handle optimizers and schedulers
         model.resume_training(resume_state)  # type: ignore[reportAttributeAccessIssue,attr-defined]
@@ -312,7 +334,6 @@ def train_pipeline(root_path: str) -> None:
     logger.info(
         f"{tc.light_green}Start training from epoch: {start_epoch}, iter: {int(current_iter / accumulate)}{tc.end}"
     )
-    # data_timer, iter_timer = AvgTimer(), AvgTimer()
     iter_timer = AvgTimer()
     start_time = time.time()
 
@@ -323,8 +344,6 @@ def train_pipeline(root_path: str) -> None:
             train_data = prefetcher.next()  # type: ignore[reportPossiblyUnboundVariable]
 
             while train_data is not None:
-                # data_timer.record()
-
                 current_iter += 1
                 if current_iter > total_iters:
                     break
@@ -337,8 +356,6 @@ def train_pipeline(root_path: str) -> None:
                 )
                 iter_timer.record()
                 if current_iter == 1:
-                    # reset start time in msg_logger for more accurate eta_time
-                    # doesn't work in resume mode
                     msg_logger.reset_start_time()
 
                 # log
@@ -352,14 +369,12 @@ def train_pipeline(root_path: str) -> None:
                     log_vars.update({"lrs": model.get_current_learning_rate()})  # type: ignore[reportFunctionMemberAccess,attr-defined]
                     log_vars.update({
                         "time": iter_timer.get_avg_time()
-                        # "data_time": data_timer.get_avg_time(),
                     })
                     log_vars.update(model.get_current_log())  # type: ignore[reportFunctionMemberAccess,attr-defined]
                     msg_logger(log_vars)
 
                 # save models and training states
                 if current_iter_log % save_checkpoint_freq == 0:
-                    # check if there's enough disk space
                     free_space = check_disk_space()
                     if free_space < 500:
                         msg = f"""
@@ -385,10 +400,9 @@ def train_pipeline(root_path: str) -> None:
                             val_loader,
                             int(current_iter_log),
                             tb_logger,
-                            opt["datasets"]["val"].get("save_img", True),
+                            opt["val"].get("save_img", True),
                         )
 
-                # data_timer.start()
                 iter_timer.start()
                 train_data = prefetcher.next()  # type: ignore[reportPossiblyUnboundVariable]
             # end of iter
@@ -400,7 +414,6 @@ def train_pipeline(root_path: str) -> None:
             f"{tc.light_green}End of training. Time consumed: {consumed_time}{tc.end}"
         )
         logger.info(f"{tc.light_green}Save the latest model.{tc.end}")
-        # -1 stands for the latest
         model.save(epoch=-1, current_iter=-1)  # type: ignore[reportFunctionMemberAccess,attr-defined]
 
     except KeyboardInterrupt:
