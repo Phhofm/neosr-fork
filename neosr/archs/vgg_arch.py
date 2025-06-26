@@ -164,13 +164,19 @@ class VGGFeatureExtractor(nn.Module):
                 std = [0.229, 0.224, 0.225]
             """
 
+            # I changed these to ImageNet values, I favor quality over training stability here.
+            # This ensures that the VGG network with its trained model is operating in its intended feature space, leading to more semantically meaningful features.
+            # musls reasoning is still sound. Using ImageNet values on a very different dataset can cause training instability, and a more general normalization like [0.5, 0.5, 0.5] can help stabilize training, even if the features are slightly less "correct."
+
             # the mean is for image with range [0, 1]
             self.register_buffer(
-                "mean", torch.tensor([0.5, 0.5, 0.5], device="cuda").view(1, 3, 1, 1)
+               #"mean", torch.tensor([0.5, 0.5, 0.5], device="cuda").view(1, 3, 1, 1)
+                "mean", torch.tensor([0.485, 0.456, 0.406], device="cuda").view(1, 3, 1, 1)
             )
             # the std is for image with range [0, 1]
             self.register_buffer(
-                "std", torch.tensor([0.25, 0.25, 0.25], device="cuda").view(1, 3, 1, 1)
+                #"std", torch.tensor([0.25, 0.25, 0.25], device="cuda").view(1, 3, 1, 1)
+                "std", torch.tensor([0.229, 0.224, 0.225], device="cuda").view(1, 3, 1, 1)
             )
 
     def forward(self, x: Tensor) -> dict[str, Tensor]:
