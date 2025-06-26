@@ -1,1 +1,0 @@
-trtexec --onnx="path/to/your/aether_small_2x_fp32_int8.onnx" --saveEngine="aether_small_2x_int8.plan" --int8 --workspace=4096 --best

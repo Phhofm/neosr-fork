@@ -1,0 +1,23 @@
+The ONNX files were exported with dynamic shapes for the batch size (1 to 16), height (64 to 512), and width (64 to 512).
+
+trtexec command to use for static:
+
+trtexec --onnx="path/to/your/aether_small_2x_fp32.onnx" \
+        --saveEngine="aether_small_2x_int8_static_256.plan" \
+        --int8 \
+        --inputShapes=input:1x3x256x256 \
+        --workspace=4096 \
+        --best
+
+
+
+trtexec command to use for dynamic:
+
+trtexec --onnx="path/to/your/aether_small_2x_fp32_int8.onnx" \
+        --saveEngine="aether_small_2x_int8_dynamic.plan" \
+        --int8 \
+        --minShapes=input:1x3x64x64 \
+        --optShapes=input:1x3x256x256 \
+        --maxShapes=input:16x3x512x512 \
+        --workspace=4096 \
+        --best
