@@ -1,9 +1,9 @@
 
-name = "2xBHI_aether_small_l1pretrain"
+name = "2xBHI_aether_small_l1pretrain_quant"
 model_type = "image"
 scale = 2
-use_amp = true
-bfloat16 = true
+use_amp = false # Please use fp32, especially with qat. Best speed, and quality.
+bfloat16 = false
 fast_matmul = true
 
 [datasets.train]
@@ -39,7 +39,7 @@ type = "aether_small"
 
 [train]
 ema = 0.999
-enable_qat = true
+enable_qat = true # Only disable qat training if you will never!!! create an int8 onnx model out of this trained model. QAT adds a bit of training overhead and also worsen metrics slightly, but will be profitable for the end user.
 
 [train.optim_g]
 type = "adamw"
