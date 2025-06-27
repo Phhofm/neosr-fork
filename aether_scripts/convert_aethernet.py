@@ -334,7 +334,7 @@ def main():
     parser.add_argument("--network", type=str, required=True,
                         choices=['aether_small', 'aether_medium', 'aether_large'],
                         help="Type of AetherNet model to convert.")
-    parser.add_argument("--img_size", type=int, default=64, # This is for dummy input height/width
+    parser.add_argument("--img_size", type=int, default=32, # This is for dummy input height/width
                         help="Input image size (height and width) for dummy input for ONNX tracing. "
                              "This should correspond to a typical patch size or smallest expected input.")
     parser.add_argument("--img_range", type=float, default=1.0,
@@ -353,19 +353,19 @@ def main():
                         help="Minimum batch size for dynamic ONNX export.")
     parser.add_argument("--opt_batch_size", type=int, default=1,
                         help="Optimal batch size for dynamic ONNX export.")
-    parser.add_argument("--max_batch_size", type=int, default=4,
+    parser.add_argument("--max_batch_size", type=int, default=16,
                         help="Maximum batch size for dynamic ONNX export.")
     parser.add_argument("--min_height", type=int, default=32,
                         help="Minimum input height for dynamic ONNX export.")
-    parser.add_argument("--opt_height", type=int, default=64,
+    parser.add_argument("--opt_height", type=int, default=256,
                         help="Optimal input height for dynamic ONNX export.")
-    parser.add_argument("--max_height", type=int, default=256,
+    parser.add_argument("--max_height", type=int, default=512,
                         help="Maximum input height for dynamic ONNX export.")
     parser.add_argument("--min_width", type=int, default=32,
                         help="Minimum input width for dynamic ONNX export.")
-    parser.add_argument("--opt_width", type=int, default=64,
+    parser.add_argument("--opt_width", type=int, default=256,
                         help="Optimal input width for dynamic ONNX export.")
-    parser.add_argument("--max_width", type=int, default=256,
+    parser.add_argument("--max_width", type=int, default=512,
                         help="Maximum input width for dynamic ONNX export.")
 
     # Validation Arguments
