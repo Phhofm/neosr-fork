@@ -9,7 +9,7 @@ scale = 2
 [datasets.test_1]
 name = "val_1"
 type = "single"
-dataroot_lq = '/home/phhofm/Documents/datasets/bhi_small/BHI100/x2'
+dataroot_lq = '/home/phips/Documents/dataset/BHI/BHI100/x2'
 [val]
 #tile = 200
 
@@ -17,7 +17,7 @@ dataroot_lq = '/home/phhofm/Documents/datasets/bhi_small/BHI100/x2'
 #type = "aether_small"
 type = "aether_medium"
 #type = "aether_large"
-fused_init = true
+fused_init = false
 
 [path]
-pretrain_network_g = '/home/phhofm/Documents/GitHub/neosr-new/neosr/experiments/2xBHI_aether_medium/models/net_g_2000_fused.pth' # Point to your newly fused model
+pretrain_network_g = '/home/phips/Documents/GitHub/neosr-fork/aether_scripts/converted_models_dynamic/aether_medium_2x_unfused.pth' # Point to your newly fused model

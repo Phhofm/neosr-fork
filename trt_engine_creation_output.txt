@@ -1,0 +1,183 @@
+trtexec --onnx=/home/phips/Documents/GitHub/neosr-fork/aether_scripts/converted_models_dynamic/aether_small_2x_fp32_int8.onnx --saveEngine=aether_small_2x_int8_dynamic.engine --int8 --minShapes=input:1x3x32x32 --optShapes=input:1x3x256x256 --maxShapes=input:1x3x720x1280
+&&&& RUNNING TensorRT.trtexec [TensorRT v101200] [b36] # trtexec --onnx=/home/phips/Documents/GitHub/neosr-fork/aether_scripts/converted_models_dynamic/aether_small_2x_fp32_int8.onnx --saveEngine=aether_small_2x_int8_dynamic.engine --int8 --minShapes=input:1x3x32x32 --optShapes=input:1x3x256x256 --maxShapes=input:1x3x720x1280
+[06/27/2025-12:27:12] [I] === Model Options ===
+[06/27/2025-12:27:12] [I] Format: ONNX
+[06/27/2025-12:27:12] [I] Model: /home/phips/Documents/GitHub/neosr-fork/aether_scripts/converted_models_dynamic/aether_small_2x_fp32_int8.onnx
+[06/27/2025-12:27:12] [I] Output:
+[06/27/2025-12:27:12] [I] === Build Options ===
+[06/27/2025-12:27:12] [I] Memory Pools: workspace: default, dlaSRAM: default, dlaLocalDRAM: default, dlaGlobalDRAM: default, tacticSharedMem: default
+[06/27/2025-12:27:12] [I] avgTiming: 8
+[06/27/2025-12:27:12] [I] Precision: FP32+INT8
+[06/27/2025-12:27:12] [I] LayerPrecisions: 
+[06/27/2025-12:27:12] [I] Layer Device Types: 
+[06/27/2025-12:27:12] [I] Calibration: Dynamic
+[06/27/2025-12:27:12] [I] Refit: Disabled
+[06/27/2025-12:27:12] [I] Strip weights: Disabled
+[06/27/2025-12:27:12] [I] Version Compatible: Disabled
+[06/27/2025-12:27:12] [I] ONNX Plugin InstanceNorm: Disabled
+[06/27/2025-12:27:12] [I] ONNX kENABLE_UINT8_AND_ASYMMETRIC_QUANTIZATION_DLA flag: Disabled
+[06/27/2025-12:27:12] [I] TensorRT runtime: full
+[06/27/2025-12:27:12] [I] Lean DLL Path: 
+[06/27/2025-12:27:12] [I] Tempfile Controls: { in_memory: allow, temporary: allow }
+[06/27/2025-12:27:12] [I] Exclude Lean Runtime: Disabled
+[06/27/2025-12:27:12] [I] Sparsity: Disabled
+[06/27/2025-12:27:12] [I] Safe mode: Disabled
+[06/27/2025-12:27:12] [I] Build DLA standalone loadable: Disabled
+[06/27/2025-12:27:12] [I] Allow GPU fallback for DLA: Disabled
+[06/27/2025-12:27:12] [I] DirectIO mode: Disabled
+[06/27/2025-12:27:12] [I] Restricted mode: Disabled
+[06/27/2025-12:27:12] [I] Skip inference: Disabled
+[06/27/2025-12:27:12] [I] Save engine: aether_small_2x_int8_dynamic.engine
+[06/27/2025-12:27:12] [I] Load engine: 
+[06/27/2025-12:27:12] [I] Profiling verbosity: 0
+[06/27/2025-12:27:12] [I] Tactic sources: Using default tactic sources
+[06/27/2025-12:27:12] [I] timingCacheMode: local
+[06/27/2025-12:27:12] [I] timingCacheFile: 
+[06/27/2025-12:27:12] [I] Enable Compilation Cache: Enabled
+[06/27/2025-12:27:12] [I] Enable Monitor Memory: Disabled
+[06/27/2025-12:27:12] [I] errorOnTimingCacheMiss: Disabled
+[06/27/2025-12:27:12] [I] Preview Features: Use default preview flags.
+[06/27/2025-12:27:12] [I] MaxAuxStreams: -1
+[06/27/2025-12:27:12] [I] BuilderOptimizationLevel: -1
+[06/27/2025-12:27:12] [I] MaxTactics: -1
+[06/27/2025-12:27:12] [I] Calibration Profile Index: 0
+[06/27/2025-12:27:12] [I] Weight Streaming: Disabled
+[06/27/2025-12:27:12] [I] Runtime Platform: Same As Build
+[06/27/2025-12:27:12] [I] Debug Tensors: 
+[06/27/2025-12:27:12] [I] Distributive Independence: Disabled
+[06/27/2025-12:27:12] [I] Mark Unfused Tensors As Debug Tensors: Disabled
+[06/27/2025-12:27:12] [I] Input(s)s format: fp32:CHW
+[06/27/2025-12:27:12] [I] Output(s)s format: fp32:CHW
+[06/27/2025-12:27:12] [I] Input build shape (profile 0): input=1x3x32x32+1x3x256x256+1x3x720x1280
+[06/27/2025-12:27:12] [I] Input calibration shapes: model
+[06/27/2025-12:27:12] [I] === System Options ===
+[06/27/2025-12:27:12] [I] Device: 0
+[06/27/2025-12:27:12] [I] DLACore: 
+[06/27/2025-12:27:12] [I] Plugins:
+[06/27/2025-12:27:12] [I] setPluginsToSerialize:
+[06/27/2025-12:27:12] [I] dynamicPlugins:
+[06/27/2025-12:27:12] [I] ignoreParsedPluginLibs: 0
+[06/27/2025-12:27:12] [I] 
+[06/27/2025-12:27:12] [I] === Inference Options ===
+[06/27/2025-12:27:12] [I] Batch: Explicit
+[06/27/2025-12:27:12] [I] Input inference shape : input=1x3x256x256
+[06/27/2025-12:27:12] [I] Iterations: 10
+[06/27/2025-12:27:12] [I] Duration: 3s (+ 200ms warm up)
+[06/27/2025-12:27:12] [I] Sleep time: 0ms
+[06/27/2025-12:27:12] [I] Idle time: 0ms
+[06/27/2025-12:27:12] [I] Inference Streams: 1
+[06/27/2025-12:27:12] [I] ExposeDMA: Disabled
+[06/27/2025-12:27:12] [I] Data transfers: Enabled
+[06/27/2025-12:27:12] [I] Spin-wait: Disabled
+[06/27/2025-12:27:12] [I] Multithreading: Disabled
+[06/27/2025-12:27:12] [I] CUDA Graph: Disabled
+[06/27/2025-12:27:12] [I] Separate profiling: Disabled
+[06/27/2025-12:27:12] [I] Time Deserialize: Disabled
+[06/27/2025-12:27:12] [I] Time Refit: Disabled
+[06/27/2025-12:27:12] [I] NVTX verbosity: 0
+[06/27/2025-12:27:12] [I] Persistent Cache Ratio: 0
+[06/27/2025-12:27:12] [I] Optimization Profile Index: 0
+[06/27/2025-12:27:12] [I] Weight Streaming Budget: 100.000000%
+[06/27/2025-12:27:12] [I] Inputs:
+[06/27/2025-12:27:12] [I] Debug Tensor Save Destinations:
+[06/27/2025-12:27:12] [I] Dump All Debug Tensor in Formats: 
+[06/27/2025-12:27:12] [I] === Reporting Options ===
+[06/27/2025-12:27:12] [I] Verbose: Disabled
+[06/27/2025-12:27:12] [I] Averages: 10 inferences
+[06/27/2025-12:27:12] [I] Percentiles: 90,95,99
+[06/27/2025-12:27:12] [I] Dump refittable layers:Disabled
+[06/27/2025-12:27:12] [I] Dump output: Disabled
+[06/27/2025-12:27:12] [I] Profile: Disabled
+[06/27/2025-12:27:12] [I] Export timing to JSON file: 
+[06/27/2025-12:27:12] [I] Export output to JSON file: 
+[06/27/2025-12:27:12] [I] Export profile to JSON file: 
+[06/27/2025-12:27:12] [I] 
+[06/27/2025-12:27:12] [I] === Device Information ===
+[06/27/2025-12:27:12] [I] Available Devices: 
+[06/27/2025-12:27:12] [I]   Device 0: "NVIDIA GeForce RTX 3060" UUID: GPU-22db99b1-6bba-ff72-d0f9-4c14f307bbbf
+[06/27/2025-12:27:12] [I] Selected Device: NVIDIA GeForce RTX 3060
+[06/27/2025-12:27:12] [I] Selected Device ID: 0
+[06/27/2025-12:27:12] [I] Selected Device UUID: GPU-22db99b1-6bba-ff72-d0f9-4c14f307bbbf
+[06/27/2025-12:27:12] [I] Compute Capability: 8.6
+[06/27/2025-12:27:12] [I] SMs: 28
+[06/27/2025-12:27:12] [I] Device Global Memory: 11913 MiB
+[06/27/2025-12:27:12] [I] Shared Memory per SM: 100 KiB
+[06/27/2025-12:27:12] [I] Memory Bus Width: 192 bits (ECC disabled)
+[06/27/2025-12:27:12] [I] Application Compute Clock Rate: 1.792 GHz
+[06/27/2025-12:27:12] [I] Application Memory Clock Rate: 7.501 GHz
+[06/27/2025-12:27:12] [I] 
+[06/27/2025-12:27:12] [I] Note: The application clock rates do not reflect the actual clock rates that the GPU is currently running at.
+[06/27/2025-12:27:12] [I] 
+[06/27/2025-12:27:12] [I] TensorRT version: 10.12.0
+[06/27/2025-12:27:12] [I] Loading standard plugins
+[06/27/2025-12:27:12] [I] [TRT] [MemUsageChange] Init CUDA: CPU +2, GPU +0, now: CPU 27, GPU 1318 (MiB)
+[06/27/2025-12:27:14] [I] [TRT] [MemUsageChange] Init builder kernel library: CPU +1560, GPU +8, now: CPU 1789, GPU 1326 (MiB)
+[06/27/2025-12:27:14] [I] Start parsing network model.
+[06/27/2025-12:27:14] [I] [TRT] ----------------------------------------------------------------
+[06/27/2025-12:27:14] [I] [TRT] Input filename:   /home/phips/Documents/GitHub/neosr-fork/aether_scripts/converted_models_dynamic/aether_small_2x_fp32_int8.onnx
+[06/27/2025-12:27:14] [I] [TRT] ONNX IR version:  0.0.8
+[06/27/2025-12:27:14] [I] [TRT] Opset version:    17
+[06/27/2025-12:27:14] [I] [TRT] Producer name:    pytorch
+[06/27/2025-12:27:14] [I] [TRT] Producer version: 2.7.1
+[06/27/2025-12:27:14] [I] [TRT] Domain:           
+[06/27/2025-12:27:14] [I] [TRT] Model version:    0
+[06/27/2025-12:27:14] [I] [TRT] Doc string:       
+[06/27/2025-12:27:14] [I] [TRT] ----------------------------------------------------------------
+[06/27/2025-12:27:14] [I] Finished parsing network model. Parse time: 0.0447608
+[06/27/2025-12:27:14] [I] Set shape of input tensor input for optimization profile 0 to: MIN=1x3x32x32 OPT=1x3x256x256 MAX=1x3x720x1280
+[06/27/2025-12:27:14] [I] FP32 and INT8 precisions have been specified - more performance might be enabled by additionally specifying --fp16 or --best
+[06/27/2025-12:27:14] [W] [TRT] Calibrator is not being used. Users must provide dynamic range for all tensors that are not Int32 or Bool.
+[06/27/2025-12:27:14] [I] [TRT] Local timing cache in use. Profiling results in this builder pass will not be stored.
+[06/27/2025-12:27:30] [I] [TRT] Compiler backend is used during engine build.
+[06/27/2025-12:28:23] [I] [TRT] [GraphReduction] The approximate region cut reduction algorithm is called.
+[06/27/2025-12:28:24] [I] [TRT] Detected 1 inputs and 1 output network tensors.
+[06/27/2025-12:28:27] [I] [TRT] Total Host Persistent Memory: 295712 bytes
+[06/27/2025-12:28:27] [I] [TRT] Total Device Persistent Memory: 0 bytes
+[06/27/2025-12:28:27] [I] [TRT] Max Scratch Memory: 711475200 bytes
+[06/27/2025-12:28:27] [I] [TRT] [BlockAssignment] Started assigning block shifts. This will take 348 steps to complete.
+[06/27/2025-12:28:27] [I] [TRT] [BlockAssignment] Algorithm ShiftNTopDown took 6.19631ms to assign 7 blocks to 348 nodes requiring 1684685312 bytes.
+[06/27/2025-12:28:27] [I] [TRT] Total Activation Memory: 1684684800 bytes
+[06/27/2025-12:28:27] [I] [TRT] Total Weights Memory: 1494664 bytes
+[06/27/2025-12:28:27] [I] [TRT] Compiler backend is used during engine execution.
+[06/27/2025-12:28:27] [I] [TRT] Engine generation completed in 72.4081 seconds.
+[06/27/2025-12:28:27] [I] [TRT] [MemUsageStats] Peak memory usage of TRT CPU/GPU memory allocators: CPU 0 MiB, GPU 8101 MiB
+[06/27/2025-12:28:27] [I] Engine built in 72.6045 sec.
+[06/27/2025-12:28:27] [I] Created engine with size: 4.4052 MiB
+[06/27/2025-12:28:27] [I] [TRT] Loaded engine size: 4 MiB
+[06/27/2025-12:28:27] [I] Engine deserialized in 0.00886635 sec.
+[06/27/2025-12:28:27] [I] [TRT] [MemUsageChange] TensorRT-managed allocation in IExecutionContext creation: CPU +0, GPU +1607, now: CPU 0, GPU 1608 (MiB)
+[06/27/2025-12:28:27] [I] Setting persistentCacheLimit to 0 bytes.
+[06/27/2025-12:28:27] [I] Set shape of input tensor input to: 1x3x256x256
+[06/27/2025-12:28:27] [I] Created execution context with device memory size: 1606.64 MiB
+[06/27/2025-12:28:27] [I] Using random values for input input
+[06/27/2025-12:28:27] [I] Input binding for input with dimensions 1x3x256x256 is created.
+[06/27/2025-12:28:27] [I] Output binding for output with dimensions 1x3x512x512 is created.
+[06/27/2025-12:28:27] [I] Starting inference
+[06/27/2025-12:28:30] [I] Warmup completed 5 queries over 200 ms
+[06/27/2025-12:28:30] [I] Timing trace has 74 queries over 3.12681 s
+[06/27/2025-12:28:30] [I] 
+[06/27/2025-12:28:30] [I] === Trace details ===
+[06/27/2025-12:28:30] [I] Trace averages of 10 runs:
+[06/27/2025-12:28:30] [I] Average on 10 runs - GPU latency: 43.8423 ms - Host latency: 44.1536 ms (enqueue 1.64515 ms)
+[06/27/2025-12:28:30] [I] Average on 10 runs - GPU latency: 41.3915 ms - Host latency: 41.6985 ms (enqueue 1.36711 ms)
+[06/27/2025-12:28:30] [I] Average on 10 runs - GPU latency: 40.9519 ms - Host latency: 41.258 ms (enqueue 1.35773 ms)
+[06/27/2025-12:28:30] [I] Average on 10 runs - GPU latency: 43.254 ms - Host latency: 43.5628 ms (enqueue 1.54775 ms)
+[06/27/2025-12:28:30] [I] Average on 10 runs - GPU latency: 42.3805 ms - Host latency: 42.6885 ms (enqueue 1.45409 ms)
+[06/27/2025-12:28:30] [I] Average on 10 runs - GPU latency: 40.7925 ms - Host latency: 41.0969 ms (enqueue 1.2907 ms)
+[06/27/2025-12:28:30] [I] Average on 10 runs - GPU latency: 39.4841 ms - Host latency: 39.789 ms (enqueue 1.29077 ms)
+[06/27/2025-12:28:30] [I] 
+[06/27/2025-12:28:30] [I] === Performance summary ===
+[06/27/2025-12:28:30] [I] Throughput: 23.6663 qps
+[06/27/2025-12:28:30] [I] Latency: min = 39.6531 ms, max = 46.705 ms, mean = 41.9142 ms, median = 41.6966 ms, percentile(90%) = 44.7201 ms, percentile(95%) = 45.4304 ms, percentile(99%) = 46.705 ms
+[06/27/2025-12:28:30] [I] Enqueue Time: min = 1.1897 ms, max = 1.88098 ms, mean = 1.41262 ms, median = 1.33871 ms, percentile(90%) = 1.6506 ms, percentile(95%) = 1.75681 ms, percentile(99%) = 1.88098 ms
+[06/27/2025-12:28:30] [I] H2D Latency: min = 0.0646973 ms, max = 0.0767822 ms, mean = 0.0697197 ms, median = 0.0686035 ms, percentile(90%) = 0.0747375 ms, percentile(95%) = 0.0755768 ms, percentile(99%) = 0.0767822 ms
+[06/27/2025-12:28:30] [I] GPU Compute Time: min = 39.3494 ms, max = 46.3984 ms, mean = 41.6071 ms, median = 41.3922 ms, percentile(90%) = 44.4139 ms, percentile(95%) = 45.1174 ms, percentile(99%) = 46.3984 ms
+[06/27/2025-12:28:30] [I] D2H Latency: min = 0.235352 ms, max = 0.24292 ms, mean = 0.237304 ms, median = 0.237122 ms, percentile(90%) = 0.238159 ms, percentile(95%) = 0.238281 ms, percentile(99%) = 0.24292 ms
+[06/27/2025-12:28:30] [I] Total Host Walltime: 3.12681 s
+[06/27/2025-12:28:30] [I] Total GPU Compute Time: 3.07893 s
+[06/27/2025-12:28:30] [W] * GPU compute time is unstable, with coefficient of variance = 4.52776%.
+[06/27/2025-12:28:30] [W]   If not already in use, locking GPU clock frequency or adding --useSpinWait may improve the stability.
+[06/27/2025-12:28:30] [I] Explanations of the performance metrics are printed in the verbose logs.
+[06/27/2025-12:28:30] [I] 
+&&&& PASSED TensorRT.trtexec [TensorRT v101200] [b36] # trtexec --onnx=/home/phips/Documents/GitHub/neosr-fork/aether_scripts/converted_models_dynamic/aether_small_2x_fp32_int8.onnx --saveEngine=aether_small_2x_int8_dynamic.engine --int8 --minShapes=input:1x3x32x32 --optShapes=input:1x3x256x256 --maxShapes=input:1x3x720x1280
+
