@@ -215,6 +215,33 @@ def load_resume_state(opt: Dict[str, Any]) -> Union[Dict[str, Any], None]:
             resume_state = None 
     return resume_state
 
+def generate_calib_data(opt, calib_iters: int) -> data.DataLoader:
+    """Efficient calibration data with proper device handling"""
+    # Create synthetic calibration images (0.25-0.75 range)
+    num_samples = calib_iters * opt['datasets']['train']['batch_size']
+    calib_data = torch.rand(
+        num_samples,
+        opt.get('in_chans', 3),
+        opt['datasets']['train']['patch_size'],
+        opt['datasets']['train']['patch_size']
+    ) * 0.5 + 0.25
+    
+    # Build dataset wrapper
+    class CalibDataset(data.Dataset):
+        def __len__(self): 
+            return num_samples
+        
+        def __getitem__(self, idx):
+            return calib_data[idx]  # Return tensor directly
+    
+    # Create dataloader without pin_memory
+    return data.DataLoader(
+        CalibDataset(),
+        batch_size=opt['datasets']['train']['batch_size'],
+        shuffle=False,
+        num_workers=0,
+        pin_memory=False  # Critical fix: disable pinning
+    )
 
 def train_pipeline(project_root: str) -> None:
     """
@@ -344,25 +371,39 @@ def train_pipeline(project_root: str) -> None:
     # Build the model based on the configuration
     model = build_model(opt)
 
-    # --- Quantization-Aware Training (QAT) Integration ---
-    if opt.get('train', {}).get('enable_qat', False):
-        logger.info(f"{tc.light_green}Enabling Quantization-Aware Training (QAT)...{tc.end}")
-        # Check if the model has a 'net_g' attribute and if it supports QAT preparation
-        if hasattr(model, 'net_g') and hasattr(model.net_g, 'prepare_qat'):
-            try:
-                # Pass the full 'opt' dictionary to 'prepare_qat' for flexible configuration
-                model.net_g.prepare_qat(opt)
-            except Exception as e:
-                logger.error(f"{tc.red}Error during QAT preparation: {e}. Exiting.{tc.end}")
-                sys.exit(1)
-        else:
-            logger.error(
-                f"{tc.red}Error: Model's 'net_g' or its 'prepare_qat()' method not found. "
-                "Ensure 'aether' network is selected and aether_arch.py correctly implements QAT methods. Exiting.{tc.end}"
-            )
-            sys.exit(1)
-        logger.info(f"{tc.light_green}QAT preparation complete.{tc.end}")
-    # --- End QAT Integration ---
+    # --- Quantization-Aware Training Setup ---
+    if opt['train'].get('enable_qat', False):
+        logger.info(f"{tc.light_green}Initializing Quantization-Aware Training...{tc.end}")
+        
+        # Step 1: Fuse model if not already fused
+        if hasattr(model.net_g, 'fuse_model'):
+            model.net_g.fuse_model()
+        
+        # Step 2: Prepare QAT configuration
+        qat_config = {
+            'type': opt['train'].get('qat_type', 'int8'),
+            'fused_init': opt['train'].get('fused_init', True),
+            'quantize_residual': opt['train'].get('quantize_residual', True),
+            'calibration_iters': opt['train'].get('calibration_iters', 0)
+        }
+        
+        # Step 3: Prepare QAT
+        model.net_g.prepare_qat(qat_config)
+        
+        # Step 4: Calibration if specified
+        calib_iters = opt['train'].get('calibration_iters', 0)
+        if calib_iters > 0:
+            logger.info(f"Running calibration for {calib_iters} iterations")
+            calib_loader = generate_calib_data(opt, calib_iters)
+            model.net_g.calibrate(calib_loader, iters=calib_iters)
+
+        # Set QAT flag on model
+        model.is_qat_prepared = True
+        
+        # Reinitialize EMA model to match QAT structure
+        if hasattr(model, 'net_g_ema'):
+            logger.info("Reinitializing EMA model for QAT compatibility")
+            model._init_ema()
 
     # Resume training from the loaded state or start fresh
     if resume_state:

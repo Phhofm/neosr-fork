@@ -71,6 +71,20 @@ class image(base):
         if self.is_train:
             self.init_training_settings()
 
+    def _init_ema(self) -> None:
+        """Reinitialize EMA model to match current model structure"""
+        if hasattr(self, 'net_g_ema'):
+            # Create new EMA model matching current structure
+            self.net_g_ema = build_network(self.opt['network_g']).to(self.device)
+            
+            # Prepare for QAT if needed
+            if hasattr(self, 'is_qat_prepared') and self.is_qat_prepared:
+                self.net_g_ema.prepare_qat(self.opt['train'])
+            
+            # Load weights from current model
+            self.net_g_ema.load_state_dict(self.net_g.state_dict())
+            self.net_g_ema.eval()
+
     def init_training_settings(self) -> None:
         # options var
         train_opt = self.opt["train"]
@@ -717,43 +731,56 @@ class image(base):
         return l_g_total
 
     def optimize_parameters(self, current_iter: int) -> None:
-        # increment accumulation counter
-        self.n_accumulated += 1
-        # reset accumulation counter
-        if self.n_accumulated >= self.accum_iters:
-            self.n_accumulated = 0
+        """Optimize parameters for one iteration"""
+        # Update learning rate for both networks
+        self.update_learning_rate(current_iter)
 
-        # run forward-backward
-        self.closure(current_iter)
+        # Optimize main generator
+        self.optimizer_g.zero_grad()
+        self.output = self.net_g(self.lq)
+        l_g_total = 0
+        loss_dict = OrderedDict()
 
-        if (self.n_accumulated) % self.accum_iters == 0:
-            # step() for generator
-            if self.sam and current_iter >= self.sam_init:
-                self.sam_optimizer_g.step(self.closure, current_iter)
+        # Calculate losses
+        if hasattr(self, 'cri_pix'):
+            l_g_pix = self.cri_pix(self.output, self.gt)
+            l_g_total += l_g_pix
+            loss_dict['l_g_pix'] = l_g_pix
+
+        if hasattr(self, 'cri_perceptual'):
+            l_g_percep, l_g_style = self.cri_perceptual(self.output, self.gt)
+            if l_g_percep is not None:
+                l_g_total += l_g_percep
+                loss_dict['l_g_percep'] = l_g_percep
+            if l_g_style is not None:
+                l_g_total += l_g_style
+                loss_dict['l_g_style'] = l_g_style
+
+        # QAT-specific loss handling
+        if self.is_qat_prepared:
+            # Additional quantization-aware losses
+            if hasattr(self, 'cri_quant'):
+                l_g_quant = self.cri_quant(self.output)
+                l_g_total += l_g_quant
+                loss_dict['l_g_quant'] = l_g_quant
+
+        l_g_total.backward()
+        self.optimizer_g.step()
+
+        # Update EMA model if enabled - with QAT compatibility
+        if hasattr(self, 'net_g_ema'):
+            # Only update EMA if models are structurally compatible
+            if self.net_g_ema.__class__ == self.net_g.__class__:
+                self.model_ema(decay=self.ema_decay)
             else:
-                self.gradscaler_g.step(self.optimizer_g)  # type: ignore[reportFunctionMemberAccess,attr-defined]
-            # step() for discriminator
-            if self.net_d is not None:
-                self.gradscaler_d.step(self.optimizer_d)  # type: ignore[reportFunctionMemberAccess,attr-defined]
+                # Reinitialize EMA model if structures differ
+                if current_iter % 1000 == 0:  # Don't spam logs
+                    print("Reinitializing EMA model to match QAT structure")
+                self._init_ema()
+                self.model_ema(decay=0)  # Force immediate sync
 
-            # zero generator grads
-            if self.sam and current_iter >= self.sam_init:
-                self.sam_optimizer_g.zero_grad(set_to_none=True)
-            else:
-                # update gradscaler
-                self.gradscaler_g.update()  # type: ignore[reportFunctionMemberAccess,attr-defined]
-                if self.net_d is not None:
-                    self.gradscaler_d.update()  # type: ignore[reportFunctionMemberAccess,attr-defined]
-                self.optimizer_g.zero_grad(set_to_none=True)
-
-            # zero discriminator grads
-            if self.net_d is not None:
-                self.optimizer_d.zero_grad(set_to_none=True)
-
-            if self.ema > 0:
-                self.net_g_ema.update_parameters(self.net_g)  # type: ignore[reportArgumentType,arg-type]
-                if self.net_d is not None:
-                    self.net_d_ema.update_parameters(self.net_d)  # type: ignore[reportArgumentType,arg-type]
+        # Save loss metrics
+        self.log_dict = self.reduce_loss_dict(loss_dict)
 
     def tile_val(self) -> Tensor:
         b, c, h, w = self.lq.shape

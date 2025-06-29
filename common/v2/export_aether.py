@@ -29,58 +29,60 @@ import numpy as np
 import warnings
 import sys
 
-# --- Import Model from aether_core.py ---
+# --- Import Model Factories from aether_core.py ---
+# This import needs to be updated to get the configurable factory functions,
+# not the pre-instantiated models.
 try:
-    # This assumes aether_core.py is in the same directory.
-    # You can extend this to import specific model factories if needed.
-    from aether_core import aether_small, aether_medium, aether_large
+    # This assumes `aether_core` now contains the factory functions.
+    from aether_core import aether, aether_small, aether_medium, aether_large
 except ImportError as e:
-    print(f"Error: Could not import model definitions from 'aether_core.py'.")
-    print(f"Please ensure 'aether_core.py' is in the same directory and contains the model definitions.")
-    print(f"Original error: {e}")
+    print(f"Error importing model from aether_core: {e}")
+    print("Please ensure aether_core.py is in your Python path and contains the model definitions.")
     sys.exit(1)
 
-# --- Helper Functions ---
 
-def get_model_from_name(name: str) -> nn.Module:
-    """
-    Instantiates a specific AetherNet model factory from aether_core.py.
-    
-    Note: The `scale` parameter should be provided to the factory function.
-    """
-    model_map = {
-        'aether_small': aether_small,
-        'aether_medium': aether_medium,
-        'aether_large': aether_large,
-    }
-    if name not in model_map:
-        raise ValueError(f"Unknown network option: '{name}'. Choose from {list(model_map.keys())}.")
-    
-    # Return the factory function, not an instance yet, so we can pass arguments later.
-    return model_map[name]
+# --- Model Loading and Utility Functions ---
 
-def load_model_from_pth(model_path: str, network_factory, scale: int, device: str) -> nn.Module:
+# Map of network names to their factory functions
+NETWORK_FACTORY_MAP = {
+    'aether': aether,  # Add a direct way to instantiate the base class
+    'aether_small': aether_small,
+    'aether_medium': aether_medium,
+    'aether_large': aether_large
+}
+
+def load_model_from_pth(model_path: str, network_name: str, scale: int, device: str):
     """
-    Loads a PyTorch model from a .pth file using the specified network factory.
+    Loads a PyTorch model from a .pth file, using a factory function
+    to instantiate the network with the correct parameters.
     """
-    if not os.path.exists(model_path):
-        raise FileNotFoundError(f"Model file not found at: {model_path}")
-    
-    # Initialize the model architecture using the factory
-    # We pass fused_init=False to ensure the model starts in an unfused state
-    # for potential quantization-related operations later.
+    # 1. Get the correct factory function from our map
+    if network_name not in NETWORK_FACTORY_MAP:
+        raise ValueError(f"Unknown network name: '{network_name}'. "
+                         f"Available networks are: {list(NETWORK_FACTORY_MAP.keys())}")
+
+    network_factory = NETWORK_FACTORY_MAP[network_name]
+
+    # 2. Instantiate the model by calling the factory function with the desired scale.
+    # This is the key change that fixes the TypeError.
+    # We pass `fused_init=False` because fusion happens after loading the weights.
     model = network_factory(scale=scale, fused_init=False)
-    
-    # Load the state dictionary
-    print(f"Loading model state from {model_path}...")
+
+    # 3. Load the pre-trained weights from the .pth file.
     state_dict = torch.load(model_path, map_location=device)
     model.load_state_dict(state_dict)
-    
-    # Set the model to evaluation mode
+
+    # 4. Prepare the model for inference and fusion.
     model.eval()
-    
-    print("Model loaded successfully.")
-    return model.to(device)
+    # The reparameterize method fuses layers for efficient inference.
+    if hasattr(model, 'reparameterize'):
+        model.reparameterize()
+
+    # 5. Move the model to the specified device.
+    model.to(device)
+
+    print(f"Model '{network_name}' with scale {scale} loaded from {model_path}.")
+    return model
 
 def save_pth_model(model: nn.Module, save_path: str):
     """Saves a PyTorch model to a .pth file."""
@@ -206,13 +208,18 @@ def main():
     parser.add_argument("--min_ssim", type=float, default=0.75, help="Minimum SSIM threshold for a model to be considered valid.")
     
     args = parser.parse_args()
-    
+
     # --- 1. Load the original PyTorch model ---
     try:
-        # Get the model factory from aether_core.py
-        network_factory = get_model_from_name(args.network)
-        # Load the model with its weights
-        model = load_model_from_pth(args.model_path, network_factory, args.scale, args.device)
+        # Load the model with its weights using the corrected function
+        # from the previous step. The network_name is passed as a string
+        # and the load_model_from_pth function gets the factory from the map.
+        model = load_model_from_pth(
+            model_path=args.model_path,
+            network_name=args.network,  # Pass the network name as a string
+            scale=args.scale,
+            device=args.device
+        )
     except (FileNotFoundError, ValueError) as e:
         print(f"Error during model loading: {e}")
         sys.exit(1)
